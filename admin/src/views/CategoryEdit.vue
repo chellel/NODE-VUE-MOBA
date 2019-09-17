@@ -1,56 +1,67 @@
 <template>
-    <div class="about">
-        <h1>{{id?'编辑':'新建'}}分类 </h1>
-        {{model.name}}
-        <el-form label-width="120px" @submit.native.prevent="save">
-            <el-form-item label="名称">
-                <el-input v-model="model.name"></el-input>
-            </el-form-item>
-            <el-form-item>
-                <el-button type="primary" native-type="submit">保存</el-button>
-            </el-form-item>
-
-        </el-form>
-    </div>
+	<div class="about">
+		<h1>{{ id ? '编辑' : '新建' }}分类</h1>
+		<el-form label-width="120px" @submit.native.prevent="save">
+			<el-form-item label="上级分类">
+				<el-select v-model="model.parent">
+                    <el-option v-for="item in parents"
+                    :key="item._id"
+                    :label="item.name"
+                    :value="item._id"
+                    ></el-option>
+                </el-select>
+			</el-form-item>
+			<el-form-item label="名称">
+				<el-input v-model="model.name"></el-input>
+			</el-form-item>
+			<el-form-item>
+				<el-button type="primary" native-type="submit">保存</el-button>
+			</el-form-item>
+		</el-form>
+	</div>
 </template>
 <script>
-    export default {
-        props: {
-            id: {}
-        },
-        data() {
-            return {
-                model: {
-                    name: ""
-                }
-            }
-        },
-        methods: {
-            async  save() {
-                let res
-                if(this.id){
-                    res = this.$http.put(`categories/${this.id}`, this.model)
-                }else{
-                    res = this.$http.post('categories', this.model)
-                }
-                this.$router.push('/categories/list')
-                this.$message({
-                    type: 'success',
-                    message: '成功'
-                })
-            },
-            async fetch() {
-                const res = await this.$http.get(`categories/${this.id}`)
-                console.log(res)
-                this.model = res.data
-
-            }
-
-        },
-        created() {
-            this.id && this.fetch()
-        }
-
-
-    }
+	export default {
+		props: {
+			id: {}
+		},
+		data() {
+			return {
+                parents:[],
+				model: {
+					name: ''
+				}
+			}
+		},
+		methods: {
+			async save() {
+				if (this.id) {
+					this.$http.put(`rest/categories/${this.id}`, this.model)
+				} else {
+					this.$http.post('rest/categories', this.model)
+				}
+				this.$router.push('/categories/list')
+				this.$message({
+					type: 'success',
+					message: '成功'
+				})
+			},
+			async fetch() {
+				const res = await this.$http.get(`rest/categories/${this.id}`)
+				this.model = res.data
+			},
+            async fetchParents() {
+				const res = await this.$http.get(`rest/categories`)
+				this.parents= res.data
+			}
+		},
+		created() {
+            this.fetchParents()
+			this.id && this.fetch()
+		}
+	}
 </script>
+<style scoped>
+.el-form-item__content{
+    text-align: left;
+}</style>
